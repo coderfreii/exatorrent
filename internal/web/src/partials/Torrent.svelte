@@ -235,7 +235,7 @@
                   on:click={() => {
                     fileviewpath.set(file?.path);
                     fileviewinfohash.set(infohash);
-                    slocation.goto('/file');
+                    slocation.goto(`/file?fp=${encodeURIComponent(file?.path)}&fih=${infohash}`);
                   }}>
                   <p class="font-medium  truncate">
                     {file?.displaypath}
@@ -353,7 +353,7 @@
                   } else if (file?.isdir === false) {
                     fileviewpath.set(file?.path);
                     fileviewinfohash.set(infohash);
-                    slocation.goto('/file');
+                    slocation.goto(`/file?fp=${encodeURIComponent(file?.path)}&fih=${infohash}`);
                   }
                 }}>
                 <p class="font-medium break-all text-left">

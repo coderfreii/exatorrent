@@ -1,6 +1,6 @@
 <script lang="ts">
   import slocation from 'slocation';
-  import { isAdmin, isDisConnected } from './partials/core';
+  import {Connect, isAdmin, isDisConnected} from './partials/core';
 
   import Index from './partials/Index.svelte';
   import Notifications from './partials/Notifications.svelte';
@@ -15,6 +15,12 @@
   import File from './partials/File.svelte';
   import About from './partials/About.svelte';
   import User from './partials/User.svelte';
+  import {onMount} from "svelte";
+
+  onMount(() => {
+    isDisConnected.set(true)
+    Connect()
+  })
 </script>
 
 <svelte:head>
@@ -26,7 +32,8 @@
   <Top />
 {/if}
 
-{#if $isDisConnected === true && $slocation.pathname !== '/signin' && $slocation.pathname !== '/file'}
+{#if $isDisConnected === true && $slocation.pathname !== '/signin'}
+<!--{#if $isDisConnected === true && $slocation.pathname !== '/signin' && $slocation.pathname !== '/file'}-->
   <Disconnect />
 {:else if $slocation.pathname === '/'}
   <Index />

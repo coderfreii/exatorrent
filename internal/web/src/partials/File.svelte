@@ -6,21 +6,26 @@
   let stream = false;
   let ft = 'unknown';
 
+  location
+
   onMount(() => {
-    if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
-      slocation.goto('/');
-    }
+    // if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
+    //   slocation.goto('/');
+    // }
+    const url = new URLSearchParams(location.search)
+    fileviewpath.set(decodeURIComponent(url.get("fp")))
+    fileviewinfohash.set(url.get("fih"))
     Send({
       command: 'getfsfileinfo',
-      data1: $fileviewinfohash,
+      data1: $fileviewinfohash ,
       data2: $fileviewpath
     });
-    filepagediscon.set(true);
+    // filepagediscon.set(true);
     ft = fileType($fileviewpath);
   });
 
   onDestroy(() => {
-    filepagediscon.set(false);
+    // filepagediscon.set(false);
     document.title = 'exatorrent';
   });
 </script>

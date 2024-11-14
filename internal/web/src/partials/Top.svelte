@@ -13,7 +13,7 @@
     if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
       console.log('Attempting to Connect');
       // slocation.goto(location.pathname);
-      isDisConnected.set(true)
+      // isDisConnected.set(true)
       Connect();
     }
   });
