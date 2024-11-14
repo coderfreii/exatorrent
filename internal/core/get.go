@@ -286,6 +286,8 @@ func GetTorrentFiles(ih metainfo.Hash) (ret []byte) {
 }
 
 func GetTorrentFileInfo(ih metainfo.Hash, fp string) (ret []byte) {
+	now := time.Now()
+
 	ret, _ = json.Marshal(DataMsg{Type: "torrentfileinfo", Data: nil})
 	t, ok := Engine.Torc.Torrent(ih)
 	if !ok {
@@ -314,6 +316,37 @@ func GetTorrentFileInfo(ih metainfo.Hash, fp string) (ret []byte) {
 	retfile.Offset = file.Offset()
 	retfile.Path = file.Path()
 	retfile.Priority = byte(file.Priority())
+
+	//
+	retfile.FilePieceState = file.State()
+
+	key := fmt.Sprintf("%s_%d", ih.HexString(), file.Offset())
+	extends := cache[key]
+
+	if extends == nil {
+		cache[key] = &FileInfoExtend{retfile.BytesCompleted, now, 0.0}
+	} else {
+		if retfile.BytesCompleted != retfile.Length {
+			sub := now.Sub(extends.Time)
+			i := retfile.BytesCompleted - extends.PreRead
+			extends.Speed = float64(i) / sub.Seconds()
+			extends.Time = now
+			extends.PreRead = retfile.BytesCompleted
+		} else {
+			if retfile.BytesCompleted != extends.PreRead {
+				sub := now.Sub(extends.Time)
+				i := retfile.BytesCompleted - extends.PreRead
+				extends.Speed = float64(i) / sub.Seconds()
+				extends.Time = now
+				extends.PreRead = retfile.BytesCompleted
+			} else {
+				extends.Time = now
+				extends.Speed = 0
+			}
+		}
+	}
+
+	retfile.FileInfoExtend = *cache[key]
 
 	ret, _ = json.Marshal(DataMsg{Infohash: ih.HexString(), Type: "torrentfileinfo", Data: retfile})
 	return
