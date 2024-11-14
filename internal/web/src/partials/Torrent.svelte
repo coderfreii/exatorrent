@@ -1,12 +1,40 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import { Send, adminmode, torrentstats, isAdmin, usersfortorrent, torctime, torrentinfo, fileSize, fsdirinfo, torrentfiles, fileviewpath, fileviewinfohash, istrntlocked } from './core';
+  import {onDestroy, onMount} from 'svelte';
+  import {
+    adminmode,
+    Connect,
+    type DlObject,
+    fileSize,
+    fileviewinfohash,
+    fileviewpath,
+    fsdirinfo,
+    isAdmin,
+    istrntlocked,
+    Send,
+    torctime,
+    torrentfiles,
+    torrentinfo,
+    torrentstats,
+    usersfortorrent
+  } from './core';
   import slocation from 'slocation';
   import TorrentCard from './TorrentCard.svelte';
-  import type { DlObject } from './core';
   import ProgStat from './ProgStat.svelte';
+  import TestStat from './test.svelte';
+  import TestSpeed from './test1.svelte';
 
+  let a = undefined
   onMount(() => {
+    if(!a){
+      a = setInterval(() => {
+        Send({
+          command: 'gettorrentfiles',
+          data1: infohash
+        });
+      },990)
+    }
+
+    // await Connect()
     torrentinfo.set({} as DlObject);
     Send({ command: 'listtorrentinfo', data1: infohash });
     Send({ command: 'gettorrentinfo', data1: infohash });
@@ -14,6 +42,7 @@
   });
 
   onDestroy(() => {
+    clearInterval(a)
     Send({ command: 'stopstream' });
     document.title = 'exatorrent';
   });
@@ -262,8 +291,9 @@
                   </div>
                 {/if}
               </div>
-
               <ProgStat bytescompleted={file?.bytescompleted} length={file?.length} offset={file?.offset} />
+              <TestSpeed downloadSpeed={file?.fileInfoExtend} />
+              <TestStat filePieces={file?.filePieceStates}/>
             </div>
           {/each}
         {/if}

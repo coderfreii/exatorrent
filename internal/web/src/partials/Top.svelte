@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { socket, Connect } from './core';
+  import {socket, Connect, isDisConnected} from './core';
   import slocation from 'slocation';
 
   function closeSocket() {
@@ -12,7 +12,8 @@
   onMount(() => {
     if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
       console.log('Attempting to Connect');
-      slocation.goto('/');
+      // slocation.goto(location.pathname);
+      isDisConnected.set(true)
       Connect();
     }
   });

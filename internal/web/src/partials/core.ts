@@ -33,6 +33,10 @@ interface TorrentFile {
   offset: number;
   path: string;
   priority: number;
+  FilePieceState: {
+    Bytes:number
+    DownloadedBytes:number
+  }
 }
 
 interface DevInfo {
@@ -225,36 +229,46 @@ let werrorfn = () => {
 };
 
 export let Connect = () => {
-  un = localStorage.getItem('exausername');
-  pw = localStorage.getItem('exapassword');
+  return  new Promise((res, rej) => {
+    if(socket && socket.readyState <3) return;
 
-  if (un != '' && un != undefined && un != null) {
-    if (pw != '' && pw != undefined && pw != null) {
-      console.log('Signing In');
+    un = localStorage.getItem('exausername');
+    pw = localStorage.getItem('exapassword');
+
+    if (un != '' && un != undefined && un != null) {
+      if (pw != '' && pw != undefined && pw != null) {
+        console.log('Signing In');
+      } else {
+        slocation.goto('/signin');
+        return;
+      }
     } else {
       slocation.goto('/signin');
       return;
     }
-  } else {
-    slocation.goto('/signin');
-    return;
-  }
 
-  if (!(un.length > 5) || !(pw.length > 5)) {
-    alert('Invalid Credentials');
-    return;
-  }
+    if (!(un.length > 5) || !(pw.length > 5)) {
+      alert('Invalid Credentials');
+      return;
+    }
 
-  if (socket != null || socket != undefined) {
-    socket?.close();
-  }
+    if (socket != null || socket != undefined) {
+      socket?.close();
+    }
 
-  socket = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/api/socket');
+    socket = new WebSocket((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/api/socket');
 
-  socket.onopen = wonopenfn;
-  socket.onmessage = SocketHandler;
-  socket.onclose = wonclosefn;
-  socket.onerror = werrorfn;
+    socket.onopen = function (){
+      res()
+      wonopenfn()
+    };
+    socket.onmessage = SocketHandler;
+    socket.onclose = wonclosefn;
+    socket.onerror = function (){
+      rej()
+      werrorfn()
+    };
+  })
 };
 
 export let SocketHandler = (event: MessageEvent) => {
