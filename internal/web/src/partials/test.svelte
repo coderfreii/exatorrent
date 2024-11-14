@@ -109,7 +109,7 @@
             ></div>
         </div>
 
-        <div>
+        <div class="text-white">
             <strong>Overall Progress:</strong> {getOverallProgress().toFixed(2)}% downloaded
         </div>
     {:else}

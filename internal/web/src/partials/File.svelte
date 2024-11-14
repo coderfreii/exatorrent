@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { Send, fileviewpath, fileviewinfohash, fsfileinfo, fileType, socket, fileSize, filepagediscon } from './core';
+  import {fileSize, fileType, fileviewinfohash, fileviewpath, fsfileinfo, Send, torrentfileinfo} from './core';
   import slocation from 'slocation';
-  import { onDestroy, onMount } from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
+  import TestStat from './test.svelte';
+  import TestSpeed from './test1.svelte';
 
   let stream = false;
   let ft = 'unknown';
-
-  location
+  let a = undefined
 
   onMount(() => {
     // if (socket == null || socket == undefined || socket?.readyState === WebSocket.CLOSED) {
@@ -22,11 +23,22 @@
     });
     // filepagediscon.set(true);
     ft = fileType($fileviewpath);
+
+    if(!a){
+      a = setInterval(() => {
+        Send({
+          command: 'gettorrentfileinfo',
+          data1: $fileviewinfohash,
+          data2: $fileviewpath
+        });
+      },990)
+    }
   });
 
   onDestroy(() => {
     // filepagediscon.set(false);
     document.title = 'exatorrent';
+    clearInterval(a)
   });
 </script>
 
@@ -95,4 +107,7 @@
   <a href="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}" target="_blank" rel="noopener noreferrer" download>
     <button type="button" class="w-full my-3 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-900 focus:outline-none"> Download </button>
   </a>
+
+  <TestSpeed downloadSpeed={$torrentfileinfo?.fileInfoExtend}/>
+  <TestStat filePieces={$torrentfileinfo?.filePieceStates}/>
 </div>

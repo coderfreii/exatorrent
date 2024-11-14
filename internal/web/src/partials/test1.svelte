@@ -14,7 +14,7 @@
     }
 </script>
 
-<main>
+<main class="text-white">
     <h1>Download Speed</h1>
     <p>{formatSpeed(downloadSpeed.Speed)}</p> <!-- 显示格式化后的速度 -->
 </main>

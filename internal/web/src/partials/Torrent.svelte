@@ -33,8 +33,6 @@
         });
       },990)
     }
-
-    // await Connect()
     torrentinfo.set({} as DlObject);
     Send({ command: 'listtorrentinfo', data1: infohash });
     Send({ command: 'gettorrentinfo', data1: infohash });
