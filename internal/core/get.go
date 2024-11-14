@@ -39,12 +39,14 @@ type Torrent2 struct {
 }
 
 type FileInfo struct {
-	BytesCompleted int64  `json:"bytescompleted"`
-	DisplayPath    string `json:"displaypath"`
-	Length         int64  `json:"length"`
-	Offset         int64  `json:"offset"`
-	Path           string `json:"path"`
-	Priority       byte   `json:"priority"`
+	BytesCompleted int64                    `json:"bytescompleted"`
+	DisplayPath    string                   `json:"displaypath"`
+	Length         int64                    `json:"length"`
+	Offset         int64                    `json:"offset"`
+	Path           string                   `json:"path"`
+	Priority       byte                     `json:"priority"`
+	FilePieceState []torrent.FilePieceState `json:"filePieceStates"`
+	FileInfoExtend FileInfoExtend           `json:"fileInfoExtend"`
 }
 
 type FsFileInfo struct {
@@ -212,6 +214,14 @@ func GetFsFileInfo(ih metainfo.Hash, fp string) (ret []byte) {
 	return
 }
 
+var cache = make(map[string]*FileInfoExtend)
+
+type FileInfoExtend struct {
+	PreRead int64
+	Time    time.Time
+	Speed   float64
+}
+
 func GetTorrentFiles(ih metainfo.Hash) (ret []byte) {
 	ret, _ = json.Marshal(DataMsg{Type: "torrentfiles", Data: nil})
 	t, ok := Engine.Torc.Torrent(ih)
@@ -221,6 +231,8 @@ func GetTorrentFiles(ih metainfo.Hash) (ret []byte) {
 	if t == nil || t.Info() == nil {
 		return
 	}
+
+	now := time.Now()
 
 	var retfiles []FileInfo
 	for _, file := range t.Files() {
@@ -234,6 +246,37 @@ func GetTorrentFiles(ih metainfo.Hash) (ret []byte) {
 		retfile.Offset = file.Offset()
 		retfile.Path = file.Path()
 		retfile.Priority = byte(file.Priority())
+
+		//
+		retfile.FilePieceState = file.State()
+
+		key := fmt.Sprintf("%s_%d", ih.HexString(), file.Offset())
+		extends := cache[key]
+
+		if extends == nil {
+			cache[key] = &FileInfoExtend{retfile.BytesCompleted, now, 0.0}
+		} else {
+			if retfile.BytesCompleted != retfile.Length {
+				sub := now.Sub(extends.Time)
+				i := retfile.BytesCompleted - extends.PreRead
+				extends.Speed = float64(i) / sub.Seconds()
+				extends.Time = now
+				extends.PreRead = retfile.BytesCompleted
+			} else {
+				if retfile.BytesCompleted != extends.PreRead {
+					sub := now.Sub(extends.Time)
+					i := retfile.BytesCompleted - extends.PreRead
+					extends.Speed = float64(i) / sub.Seconds()
+					extends.Time = now
+					extends.PreRead = retfile.BytesCompleted
+				} else {
+					extends.Time = now
+					extends.Speed = 0
+				}
+			}
+		}
+
+		retfile.FileInfoExtend = *cache[key]
 
 		retfiles = append(retfiles, retfile)
 	}
