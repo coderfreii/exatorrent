@@ -40,6 +40,21 @@
     document.title = 'exatorrent';
     clearInterval(a)
   });
+
+  function copyText() {
+    // 获取输入框元素
+    var input = document.getElementById("myInput") as HTMLInputElement;
+
+    // 选中输入框中的文本
+    input.select();
+    input.setSelectionRange(0, 99999); // 对于手机端兼容
+
+    // 执行复制操作
+    document.execCommand("copy");
+
+    // 提示用户已复制
+    alert("Copied: " + input.value);
+  }
 </script>
 
 <svelte:head>
@@ -93,7 +108,7 @@
   </div>
 
   {#if ft === 'video' || ft === 'audio'}
-    <a href="vlc://{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}" target="_blank" rel="noopener noreferrer">
+    <a href="vlc://{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}">
       <button class="bg-yellow-700 w-full my-2 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none"> Play in VLC </button>
     </a>
 
@@ -102,11 +117,13 @@
     </a>
   {/if}
 
-  <input type="text" class="bg-zinc-700 rounded-md  w-full my-2 py-2 px-4 text-sm text-neutral-300 truncate" disabled value="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" />
+  <input id="myInput" type="text" class="bg-zinc-700 rounded-md  w-full my-2 py-2 px-4 text-sm text-neutral-300 truncate" disabled value="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}" />
 
   <a href="{location.origin}/api/{stream ? 'stream' : 'torrent'}/{$fileviewinfohash}/{$fileviewpath}?token={localStorage.getItem('exasession')}" target="_blank" rel="noopener noreferrer" download>
     <button type="button" class="w-full my-3 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-900 focus:outline-none"> Download </button>
   </a>
+
+  <button type="button" class="w-full my-3 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-900 focus:outline-none" on:click={copyText}> copy </button>
 
   <TestSpeed downloadSpeed={$torrentfileinfo?.fileInfoExtend}/>
   <TestStat filePieces={$torrentfileinfo?.filePieceStates}/>
